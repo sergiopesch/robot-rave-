@@ -1299,9 +1299,13 @@ class BeatDetector:
                         confidences.append(autocorr_confidence)
         
         if not bpm_estimates:
-            if len(self.beat_times) >= 2:
-                return self.current_bpm if self.current_bpm > 0 else 120, 15
-            return self.current_bpm if self.current_bpm > 0 else 120, 0
+            # Check if beats are recent (within last 2 seconds)
+            current_time = time.time()
+            recent_beats = [t for t in self.beat_times if current_time - t < 2.0]
+            if len(recent_beats) >= 2:
+                return self.current_bpm if self.current_bpm > 0 else 120, 10  # Lower confidence
+            # No recent beats - return 0 confidence to help stop detection
+            return self.current_bpm if self.current_bpm > 0 else 0, 0
         
         total_conf = sum(confidences)
         if total_conf > 0:
@@ -1335,11 +1339,12 @@ class BeatDetector:
 
 class MusicDetector:
     """Distinguish music from speech and noise"""
-    
+
     def __init__(self):
-        self.score_history = collections.deque(maxlen=30)
+        self.score_history = collections.deque(maxlen=12)  # Reduced from 30 for faster response (~280ms)
         self.is_music = False
         self.confidence = 0
+        self.low_score_count = 0  # Track consecutive low scores for fast dropout
     
     def update(self, features: AudioFeatures, bpm_confidence: int, 
                beat_regularity: float) -> Tuple[bool, int]:
@@ -1372,25 +1377,45 @@ class MusicDetector:
         
         self.score_history.append(score)
         avg_score = float(np.mean(list(self.score_history)))
-        
+
+        # Fast dropout: if current score is very low, exit music state quickly
+        if score < 1.5:
+            self.low_score_count += 1
+        else:
+            self.low_score_count = 0
+
+        # Quick exit if we get 5+ consecutive low scores (~115ms)
+        if self.low_score_count >= 5:
+            self.is_music = False
+            self.confidence = 0
+            return self.is_music, self.confidence
+
         if self.is_music:
-            threshold = 2.5
+            threshold = 2.0  # Lower threshold to exit faster (was 2.5)
         else:
             threshold = 3.5
-        
+
         self.is_music = avg_score >= threshold
         self.confidence = int(min(100, avg_score * 15))
-        
+
         return self.is_music, self.confidence
+
+    def reset(self):
+        """Clear history for fresh start"""
+        self.score_history.clear()
+        self.is_music = False
+        self.confidence = 0
+        self.low_score_count = 0
 
 
 class AudioClassifier:
     """Classify audio into SILENCE/NOISE/SPEECH/MUSIC"""
-    
+
     def __init__(self):
-        self.history = collections.deque(maxlen=30)
+        self.history = collections.deque(maxlen=10)  # Reduced from 30 for faster response (~230ms)
         self.current_type = "SILENCE"
         self.confidence = 0
+        self.silence_streak = 0  # Track consecutive silence detections
     
     def classify(self, features: AudioFeatures, bpm_confidence: int, 
                  noise_floor: float) -> Tuple[str, int]:
@@ -1462,27 +1487,47 @@ class AudioClassifier:
             scores["SPEECH"] += 10.0
         
         self.history.append(scores.copy())
-        
+
+        # Fast silence detection: if silence score is very high, switch immediately
+        if scores["SILENCE"] >= 70:
+            self.silence_streak += 1
+        else:
+            self.silence_streak = 0
+
+        # Quick switch to SILENCE after 3 consecutive high-silence frames (~70ms)
+        if self.silence_streak >= 3:
+            self.current_type = "SILENCE"
+            self.confidence = int(scores["SILENCE"])
+            return self.current_type, self.confidence
+
         avg_scores = {k: 0.0 for k in scores}
         for h in self.history:
             for k in h:
                 avg_scores[k] += h[k]
         for k in avg_scores:
             avg_scores[k] /= len(self.history)
-        
+
         winner = max(avg_scores, key=avg_scores.get)
         winner_score = avg_scores[winner]
-        
+
         sorted_scores = sorted(avg_scores.values(), reverse=True)
         margin = sorted_scores[0] - sorted_scores[1] if len(sorted_scores) > 1 else sorted_scores[0]
         confidence = int(min(100, winner_score + margin))
-        
+
+        # Reduced hysteresis margin for faster state changes (was 15)
         if winner != self.current_type:
-            if winner_score > avg_scores.get(self.current_type, 0) + 15:
+            if winner_score > avg_scores.get(self.current_type, 0) + 8:
                 self.current_type = winner
-        
+
         self.confidence = confidence
         return self.current_type, confidence
+
+    def reset(self):
+        """Clear history for fresh start"""
+        self.history.clear()
+        self.current_type = "SILENCE"
+        self.confidence = 0
+        self.silence_streak = 0
 
 
 # ============================================================
@@ -2089,26 +2134,43 @@ def audio_loop():
 
                     if auto:
                         if is_dancing:
-                            # PRIMARY: Use immediate energy level (not slow classifiers)
-                            # Stop if energy stays low for ~500ms (22 frames at ~23ms each)
-                            LOW_ENERGY_THRESHOLD = 10  # Very low energy indicates no music
+                            # IMPROVED: Multi-signal silence detection for faster response
+                            # Combine energy, gate, and classifier signals
+                            LOW_ENERGY_THRESHOLD = 12  # Slightly raised for better detection
+                            MEDIUM_ENERGY_THRESHOLD = 25
 
-                            if energy_0_100 < LOW_ENERGY_THRESHOLD:
-                                silence_counter += 1
-                            elif energy_0_100 < 20:
-                                # Moderate low energy - increment slower
+                            # Fast path: if below noise gate, increment quickly
+                            if is_below_gate or is_muted:
+                                silence_counter += 2.0  # Fast increment when gated
+                            elif energy_0_100 < LOW_ENERGY_THRESHOLD:
+                                silence_counter += 1.5  # Quick increment for very low energy
+                            elif energy_0_100 < MEDIUM_ENERGY_THRESHOLD:
+                                # Check audio type for additional signal
+                                if audio_type == "SILENCE":
+                                    silence_counter += 1.2
+                                elif audio_type != "MUSIC":
+                                    silence_counter += 0.8
+                                else:
+                                    silence_counter += 0.3
+                            elif not is_music and audio_type != "MUSIC":
+                                # Energy OK but classifiers say no music
                                 silence_counter += 0.5
                             else:
-                                # Energy is good - reset counter
-                                silence_counter = 0
+                                # Clear music signal - reset counter
+                                silence_counter = max(0, silence_counter - 1)  # Gradual reset
 
-                            # Stop after ~500ms of low energy (22 frames)
-                            if silence_counter >= 22:
+                            # Stop after ~350ms of accumulated silence signals (was 500ms)
+                            # 15 frames at ~23ms = ~345ms
+                            if silence_counter >= 15:
                                 is_dancing = False
                                 clear_motor_queue()
                                 stop_robot()
                                 last_move_time = 0
                                 silence_counter = 0  # Reset for next time
+
+                                # Reset classifiers for fresh start next time
+                                music_detector.reset()
+                                audio_classifier.reset()
 
                                 # Eyes go sleepy
                                 robot_eyes.set_expression("sleepy")
