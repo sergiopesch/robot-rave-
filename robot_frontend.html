@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE ROBOT RAVE</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: linear-gradient(135deg, 
+      #ffd6e0 0%, 
+      #c9ffd4 25%, 
+      #d4e4ff 50%, 
+      #fff4c9 75%,
+      #ffd6e0 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    color: #1a1a2e;
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    padding: 10px;
+    padding-bottom: 80px;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 20px 10px;
+    margin-bottom: 15px;
+  }
+
+  .header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #ff0080;
+    text-shadow: 3px 3px 0 #00ff88, -1px -1px 0 #00ff88;
+    letter-spacing: 4px;
+    margin-bottom: 5px;
+  }
+
+  .header .subtitle {
+    font-size: 12px;
+    color: #ff0080;
+    letter-spacing: 2px;
+  }
+
+  /* Tab Navigation */
+  .tab-nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 15px 10px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 3px solid #ff0080;
+    color: #ff0080;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .tab-btn:hover {
+    background: rgba(255, 0, 128, 0.1);
+  }
+
+  .tab-btn.active {
+    background: #ff0080;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  /* Cards/Boxes */
+  .card {
+    background: rgba(255, 255, 255, 0.85);
+    border: 2px solid #00ff88;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
+  }
+
+  .card-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ff0080;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  /* Audio Status Display */
+  .status-display {
+    text-align: center;
+    padding: 25px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d1f3d 100%);
+    border-radius: 12px;
+    border: 3px solid #00ff88;
+    margin-bottom: 15px;
+  }
+
+  .audio-type {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: #00ff88;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+    margin-bottom: 8px;
+  }
+
+  .audio-type.silence { color: #666; text-shadow: none; }
+  .audio-type.noise { color: #ff6b6b; text-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
+  .audio-type.speech { color: #ffd93d; text-shadow: 0 0 20px rgba(255, 217, 61, 0.8); }
+  .audio-type.music { color: #00ff88; text-shadow: 0 0 30px rgba(0, 255, 136, 1); }
+  .audio-type.muted { color: #888; text-shadow: none; }
+  .audio-type.gated { color: #ffd93d; text-shadow: none; }
+
+  .audio-confidence {
+    font-size: 12px;
+    color: #aaa;
+  }
+
+  /* Visualizer Containers */
+  .visualizer-box {
+    background: #1a1a2e;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 2px solid #ff0080;
+  }
+
+  .visualizer-canvas {
+    width: 100%;
+    display: block;
+    border-radius: 6px;
+  }
+
+  /* Energy Bars */
+  .energy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .energy-item {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .energy-label {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .energy-value {
+    color: #00ff88;
+    font-weight: bold;
+  }
+
+  .energy-bar {
+    height: 8px;
+    background: #2a2a3e;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .energy-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.05s linear;
+  }
+
+  .energy-fill.overall { background: linear-gradient(90deg, #00ff88, #ffd93d, #ff0080); }
+  .energy-fill.bass { background: linear-gradient(90deg, #ff0080, #ff6b6b); }
+  .energy-fill.mid { background: linear-gradient(90deg, #00ff88, #6bff6b); }
+  .energy-fill.treble { background: linear-gradient(90deg, #00d4ff, #6b6bff); }
+
+  /* BPM Display */
+  .bpm-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 15px;
+    background: #1a1a2e;
+    border-radius: 10px;
+  }
+
+  .bpm-main {
+    text-align: center;
+  }
+
+  .bpm-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 48px;
+    font-weight: 900;
+    color: #00ff88;
+    text-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+    line-height: 1;
+  }
+
+  .bpm-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  .beat-indicator {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #2a2a3e;
+    border: 3px solid #ff0080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.08s;
+  }
+
+  .beat-indicator.active {
+    background: #ff0080;
+    box-shadow: 0 0 30px rgba(255, 0, 128, 0.8);
+    transform: scale(1.2);
+  }
+
+  .beat-indicator span {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  .confidence-bar {
+    width: 80px;
+    text-align: center;
+  }
+
+  .confidence-dots {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+
+  .conf-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2a2a3e;
+  }
+
+  .conf-dot.active {
+    background: #00ff88;
+    box-shadow: 0 0 6px #00ff88;
+  }
+
+  /* Sliders */
+  .slider-group {
+    margin: 15px 0;
+  }
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 11px;
+  }
+
+  .slider-label {
+    color: #1a1a2e;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  .slider-value {
+    color: #ff0080;
+    font-weight: bold;
+  }
+
+  input[type=range] {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #ddd;
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #ff0080;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 0, 128, 0.5);
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  /* Dance Status */
+  .dance-status {
+    text-align: center;
+    padding: 30px 20px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d1f3d 100%);
+    border-radius: 12px;
+    border: 3px solid #ff0080;
+    margin-bottom: 15px;
+  }
+
+  .dance-status-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .dance-status.dancing .dance-status-text {
+    color: #00ff88;
+    animation: pulse 0.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.02); }
+  }
+
+  .dance-reason {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 5px;
+  }
+
+  /* Movement Visualizer */
+  .move-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .move-grid {
+    display: grid;
+    grid-template-columns: 50px 60px 50px;
+    grid-template-rows: 50px 60px 50px;
+    gap: 5px;
+    align-items: center;
+    justify-items: center;
+    position: relative;
+  }
+
+  .move-arrow {
+    font-size: 28px;
+    opacity: 0.2;
+    transition: all 0.1s;
+    color: #00ff88;
+  }
+
+  .move-arrow.active {
+    opacity: 1;
+    transform: scale(1.3);
+    text-shadow: 0 0 10px #00ff88;
+  }
+
+  .move-center {
+    font-size: 36px;
+  }
+
+  .move-spin {
+    position: absolute;
+    font-size: 50px;
+    opacity: 0;
+    transition: all 0.1s;
+    color: #ff0080;
+  }
+
+  .move-spin.active {
+    opacity: 1;
+    animation: spin 0.5s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .move-info {
+    text-align: center;
+    margin-top: 15px;
+  }
+
+  .current-move {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #00ff88;
+  }
+
+  .move-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 10px;
+  }
+
+  .move-stat {
+    text-align: center;
+  }
+
+  .move-stat-label {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+  }
+
+  .move-stat-value {
+    font-size: 16px;
+    color: #fff;
+    font-weight: bold;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    width: 100%;
+    padding: 18px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+  }
+
+  .btn-primary.active {
+    background: linear-gradient(135deg, #ff0080 0%, #cc0066 100%);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(255, 0, 128, 0.5);
+    animation: btnPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes btnPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 128, 0.5); }
+    50% { box-shadow: 0 0 40px rgba(255, 0, 128, 0.8); }
+  }
+
+  .btn-stop {
+    width: 100%;
+    padding: 15px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 15px;
+  }
+
+  .btn-stop:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 0, 0, 0.4);
+  }
+
+  /* D-Pad */
+  .dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin: 20px 0;
+  }
+
+  .dpad-row {
+    display: flex;
+    gap: 5px;
+  }
+
+  .btn-dir {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    background: linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 100%);
+    color: #00ff88;
+    border: 2px solid #00ff88;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-dir:active {
+    background: #00ff88;
+    color: #1a1a2e;
+    transform: scale(0.95);
+  }
+
+  .btn-dir.hidden {
+    visibility: hidden;
+  }
+
+  /* Dance Info Grid */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .info-item {
+    background: #1a1a2e;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .info-label {
+    font-size: 9px;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .info-value {
+    font-size: 14px;
+    color: #00ff88;
+    font-weight: bold;
+  }
+
+  /* Diagnostics */
+  .diag-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .diag-arrow {
+    color: #ff0080;
+    transition: transform 0.2s;
+  }
+
+  .diag-arrow.open {
+    transform: rotate(90deg);
+  }
+
+  .diag-panel {
+    display: none;
+    margin-top: 12px;
+  }
+
+  .diag-panel.open {
+    display: block;
+  }
+
+  .diag-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .diag-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    background: #1a1a2e;
+    border-radius: 4px;
+    font-size: 10px;
+  }
+
+  .diag-label {
+    color: #888;
+  }
+
+  .diag-value {
+    color: #00ff88;
+    font-weight: bold;
+  }
+
+  /* Status Bar */
+  .status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(26, 26, 46, 0.95);
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 2px solid #ff0080;
+    font-size: 11px;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #888;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #444;
+  }
+
+  .status-dot.ok { background: #00ff88; box-shadow: 0 0 6px #00ff88; }
+  .status-dot.warn { background: #ffd93d; }
+  .status-dot.err { background: #ff4444; }
+
+  .status-text {
+    color: #00ff88;
+  }
+
+  /* Level Meter */
+  .level-meter {
+    margin-top: 12px;
+  }
+
+  .level-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+
+  .level-bar {
+    height: 6px;
+    background: #2a2a3e;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .level-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff88, #ffd93d, #ff0080);
+    transition: width 0.05s;
+  }
+
+  /* Audio Status Indicator */
+  .audio-indicator {
+    text-align: center;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+
+  .audio-indicator.listening {
+    background: rgba(0, 255, 136, 0.1);
+    color: #00ff88;
+    border: 1px solid #00ff88;
+  }
+
+  .audio-indicator.muted {
+    background: rgba(255, 0, 128, 0.1);
+    color: #ff0080;
+    border: 1px solid #ff0080;
+  }
+
+  .audio-indicator.gated {
+    background: rgba(255, 217, 61, 0.1);
+    color: #ffd93d;
+    border: 1px solid #ffd93d;
+  }
+</style>
+</head>
+
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>RAVITTO</h1>
+    <div class="subtitle">THE DANCING ROBOT</div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-nav">
+    <button class="tab-btn" data-tab="about" onclick="switchTab('about')">
+      ABOUT
+    </button>
+    <button class="tab-btn active" data-tab="audio" onclick="switchTab('audio')">
+      AUDIO
+    </button>
+    <button class="tab-btn" data-tab="dance" onclick="switchTab('dance')">
+      DANCE
+    </button>
+  </div>
+
+  <!-- TAB 0: About / Presentation -->
+  <div id="tab-about" class="tab-content">
+    
+    <!-- Hero Section -->
+    <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(255,0,128,0.1) 0%, rgba(0,255,136,0.1) 100%);">
+      <div style="font-family: 'Orbitron', sans-serif; font-size: 42px; font-weight: 900; color: #ff0080; text-shadow: 3px 3px 0 #00ff88; margin-bottom: 10px;">
+        RAVITTO
+      </div>
+      <div style="font-size: 16px; color: #ff0080; letter-spacing: 3px; margin-bottom: 15px;">
+        THE DANCING ROBOT
+      </div>
+      <div style="font-size: 12px; color: #888;">
+        Created by <span style="color: #ff0080; font-weight: bold;">Sergio Peschiera</span>
+        <br>
+        <a href="https://x.com/sergiopesch" target="_blank" style="color: #ff0080; text-decoration: none; font-weight: bold;">@sergiopesch</a>
+      </div>
+    </div>
+
+    <!-- Architecture Diagram -->
+    <div class="card">
+      <div class="card-title">System Architecture</div>
+      <div style="background: #1a1a2e; border-radius: 10px; padding: 15px; overflow-x: auto;">
+        <svg viewBox="0 0 400 280" style="width: 100%; max-width: 400px; margin: 0 auto; display: block;">
+          <!-- Music Source -->
+          <rect x="10" y="10" width="80" height="40" rx="8" fill="#ff0080" opacity="0.8"/>
+          <text x="50" y="35" text-anchor="middle" fill="white" font-size="10" font-family="Orbitron">MUSIC</text>
+          
+          <!-- Arrow down -->
+          <path d="M50 50 L50 70 L45 65 M50 70 L55 65" stroke="#00ff88" stroke-width="2" fill="none"/>
+          
+          <!-- USB Microphone -->
+          <rect x="10" y="75" width="80" height="40" rx="8" fill="#00ff88" opacity="0.8"/>
+          <text x="50" y="92" text-anchor="middle" fill="#1a1a2e" font-size="9" font-family="Orbitron" font-weight="bold">USB MIC</text>
+          <text x="50" y="105" text-anchor="middle" fill="#1a1a2e" font-size="7">44.1kHz Audio</text>
+          
+          <!-- Arrow to Pi -->
+          <path d="M90 95 L120 95 L115 90 M120 95 L115 100" stroke="#00ff88" stroke-width="2" fill="none"/>
+          
+          <!-- Raspberry Pi -->
+          <rect x="125" y="60" width="150" height="90" rx="10" fill="#2a2a3e" stroke="#ff0080" stroke-width="2"/>
+          <text x="200" y="80" text-anchor="middle" fill="#ff0080" font-size="10" font-family="Orbitron" font-weight="bold">RASPBERRY PI</text>
+          
+          <!-- Python Backend Box -->
+          <rect x="135" y="88" width="130" height="55" rx="6" fill="#1a1a2e" stroke="#00ff88" stroke-width="1"/>
+          <text x="200" y="103" text-anchor="middle" fill="#00ff88" font-size="8" font-family="monospace">Python Backend</text>
+          <text x="200" y="116" text-anchor="middle" fill="#888" font-size="6">FFT Analysis</text>
+          <text x="200" y="126" text-anchor="middle" fill="#888" font-size="6">Beat Detection</text>
+          <text x="200" y="136" text-anchor="middle" fill="#888" font-size="6">Dance Engine</text>
+          
+          <!-- Arrow to Motors -->
+          <path d="M275 105 L305 105 L300 100 M305 105 L300 110" stroke="#ff0080" stroke-width="2" fill="none"/>
+          
+          <!-- Motors -->
+          <rect x="310" y="75" width="80" height="60" rx="8" fill="#ff0080" opacity="0.8"/>
+          <text x="350" y="95" text-anchor="middle" fill="white" font-size="9" font-family="Orbitron" font-weight="bold">MOTORS</text>
+          <text x="350" y="108" text-anchor="middle" fill="white" font-size="7">L298N Driver</text>
+          <text x="350" y="120" text-anchor="middle" fill="white" font-size="7">2x DC Motors</text>
+          
+          <!-- Arrow down to Web UI -->
+          <path d="M200 150 L200 175 L195 170 M200 175 L205 170" stroke="#00ff88" stroke-width="2" fill="none"/>
+          
+          <!-- Flask Server / Web UI -->
+          <rect x="125" y="180" width="150" height="50" rx="8" fill="#00ff88" opacity="0.8"/>
+          <text x="200" y="200" text-anchor="middle" fill="#1a1a2e" font-size="9" font-family="Orbitron" font-weight="bold">FLASK WEB UI</text>
+          <text x="200" y="215" text-anchor="middle" fill="#1a1a2e" font-size="7">Real-time Visualizations</text>
+          <text x="200" y="225" text-anchor="middle" fill="#1a1a2e" font-size="7">WiFi Control</text>
+          
+          <!-- Phone -->
+          <rect x="160" y="245" width="80" height="30" rx="6" fill="#2a2a3e" stroke="#ff0080" stroke-width="1"/>
+          <text x="200" y="264" text-anchor="middle" fill="#ff0080" font-size="8">📱 Your Phone</text>
+          
+          <!-- Arrow up from phone -->
+          <path d="M200 245 L200 232 L195 237 M200 232 L205 237" stroke="#ff0080" stroke-width="2" fill="none"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="card">
+      <div class="card-title">How It Works</div>
+      <div style="background: #1a1a2e; border-radius: 10px; padding: 15px;">
+        
+        <div style="margin-bottom: 15px;">
+          <div style="color: #ff0080; font-weight: bold; font-size: 12px; margin-bottom: 5px;">🎵 1. AUDIO CAPTURE</div>
+          <div style="color: #ccc; font-size: 11px; line-height: 1.5; padding-left: 20px;">
+            USB microphone captures ambient audio at 44.1kHz, processing 2048 samples per chunk (~46ms) for optimal bass frequency resolution.
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <div style="color: #00ff88; font-weight: bold; font-size: 12px; margin-bottom: 5px;">📊 2. REAL-TIME ANALYSIS</div>
+          <div style="color: #ccc; font-size: 11px; line-height: 1.5; padding-left: 20px;">
+            <strong>FFT</strong> extracts frequency spectrum • <strong>Spectral Flux</strong> detects beat onsets • <strong>Autocorrelation</strong> estimates BPM • <strong>Audio Classification</strong> distinguishes music from speech/noise.
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <div style="color: #ffd93d; font-weight: bold; font-size: 12px; margin-bottom: 5px;">🤖 3. DANCE ENGINE</div>
+          <div style="color: #ccc; font-size: 11px; line-height: 1.5; padding-left: 20px;">
+            Selects dance patterns based on detected BPM and energy levels. Synchronizes motor movements to beats with human-like timing variations.
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 0;">
+          <div style="color: #00d4ff; font-weight: bold; font-size: 12px; margin-bottom: 5px;">⚡ 4. MOTOR CONTROL</div>
+          <div style="color: #ccc; font-size: 11px; line-height: 1.5; padding-left: 20px;">
+            PWM signals drive L298N motor controller. Dual DC motors enable forward, backward, spin, and turn movements with variable intensity.
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- Key Features -->
+    <div class="card">
+      <div class="card-title">Key Features</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        
+        <div style="background: #1a1a2e; border-radius: 8px; padding: 12px; text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 5px;">🎤</div>
+          <div style="color: #00ff88; font-size: 11px; font-weight: bold;">Live Audio</div>
+          <div style="color: #888; font-size: 9px;">Real-time mic input</div>
+        </div>
+        
+        <div style="background: #1a1a2e; border-radius: 8px; padding: 12px; text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 5px;">🥁</div>
+          <div style="color: #ff0080; font-size: 11px; font-weight: bold;">Beat Detection</div>
+          <div style="color: #888; font-size: 9px;">Spectral flux analysis</div>
+        </div>
+        
+        <div style="background: #1a1a2e; border-radius: 8px; padding: 12px; text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 5px;">📈</div>
+          <div style="color: #ffd93d; font-size: 11px; font-weight: bold;">BPM Tracking</div>
+          <div style="color: #888; font-size: 9px;">60-180 BPM range</div>
+        </div>
+        
+        <div style="background: #1a1a2e; border-radius: 8px; padding: 12px; text-align: center;">
+          <div style="font-size: 24px; margin-bottom: 5px;">💃</div>
+          <div style="color: #00d4ff; font-size: 11px; font-weight: bold;">Auto Dance</div>
+          <div style="color: #888; font-size: 9px;">Music-triggered moves</div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- Tech Stack -->
+    <div class="card">
+      <div class="card-title">Tech Stack</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <span style="background: #ff0080; color: white; padding: 5px 12px; border-radius: 15px; font-size: 10px;">Python 3</span>
+        <span style="background: #00ff88; color: #1a1a2e; padding: 5px 12px; border-radius: 15px; font-size: 10px;">Flask</span>
+        <span style="background: #ffd93d; color: #1a1a2e; padding: 5px 12px; border-radius: 15px; font-size: 10px;">NumPy</span>
+        <span style="background: #00d4ff; color: #1a1a2e; padding: 5px 12px; border-radius: 15px; font-size: 10px;">SciPy</span>
+        <span style="background: #ff6b6b; color: white; padding: 5px 12px; border-radius: 15px; font-size: 10px;">SoundDevice</span>
+        <span style="background: #9b59b6; color: white; padding: 5px 12px; border-radius: 15px; font-size: 10px;">RPi.GPIO</span>
+        <span style="background: #3498db; color: white; padding: 5px 12px; border-radius: 15px; font-size: 10px;">HTML5 Canvas</span>
+        <span style="background: #2ecc71; color: white; padding: 5px 12px; border-radius: 15px; font-size: 10px;">Web Audio API</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB 1: Audio Monitoring -->
+  <div id="tab-audio" class="tab-content active">
+    
+    <!-- Audio Type Display -->
+    <div class="status-display">
+      <div id="audio-type" class="audio-type silence">SILENCE</div>
+      <div id="audio-confidence" class="audio-confidence">Listening...</div>
+    </div>
+
+    <!-- Waveform -->
+    <div class="card">
+      <div class="card-title">Waveform</div>
+      <div class="visualizer-box">
+        <canvas id="waveform-canvas" class="visualizer-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Spectrum -->
+    <div class="card">
+      <div class="card-title">Frequency Spectrum</div>
+      <div class="visualizer-box">
+        <canvas id="spectrum-canvas" class="visualizer-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Energy Levels -->
+    <div class="card">
+      <div class="card-title">Energy Levels</div>
+      <div class="energy-grid">
+        <div class="energy-item">
+          <div class="energy-label">
+            <span>Overall</span>
+            <span id="energy-overall-val" class="energy-value">0%</span>
+          </div>
+          <div class="energy-bar">
+            <div id="energy-overall" class="energy-fill overall" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="energy-item">
+          <div class="energy-label">
+            <span>Bass</span>
+            <span id="energy-bass-val" class="energy-value">0%</span>
+          </div>
+          <div class="energy-bar">
+            <div id="energy-bass" class="energy-fill bass" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="energy-item">
+          <div class="energy-label">
+            <span>Mid</span>
+            <span id="energy-mid-val" class="energy-value">0%</span>
+          </div>
+          <div class="energy-bar">
+            <div id="energy-mid" class="energy-fill mid" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="energy-item">
+          <div class="energy-label">
+            <span>Treble</span>
+            <span id="energy-treble-val" class="energy-value">0%</span>
+          </div>
+          <div class="energy-bar">
+            <div id="energy-treble" class="energy-fill treble" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BPM & Beat -->
+    <div class="card">
+      <div class="card-title">Rhythm Detection</div>
+      <div class="bpm-container">
+        <div class="bpm-main">
+          <div id="bpm-value" class="bpm-value">--</div>
+          <div class="bpm-label">BPM</div>
+        </div>
+        <div class="confidence-bar">
+          <div class="confidence-dots">
+            <div class="conf-dot"></div>
+            <div class="conf-dot"></div>
+            <div class="conf-dot"></div>
+            <div class="conf-dot"></div>
+            <div class="conf-dot"></div>
+            <div class="conf-dot"></div>
+            <div class="conf-dot"></div>
+            <div class="conf-dot"></div>
+            <div class="conf-dot"></div>
+            <div class="conf-dot"></div>
+          </div>
+          <div class="bpm-label">Confidence</div>
+        </div>
+        <div>
+          <div id="beat-indicator" class="beat-indicator">
+            <span>B</span>
+          </div>
+          <div class="bpm-label">Beat</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audio Settings -->
+    <div class="card">
+      <div class="card-title">Audio Settings</div>
+      
+      <div id="audio-indicator" class="audio-indicator listening">
+        MIC ACTIVE - LISTENING
+      </div>
+      
+      <div class="slider-group">
+        <div class="slider-header">
+          <span class="slider-label">Input Gain</span>
+          <span id="gain-val" class="slider-value">50%</span>
+        </div>
+        <input id="gain" type="range" min="0" max="100" value="50"
+          oninput="setGain(this.value)">
+        <div class="slider-labels">
+          <span>MUTE</span>
+          <span>UNITY</span>
+          <span>BOOST</span>
+        </div>
+      </div>
+      
+      <div class="slider-group">
+        <div class="slider-header">
+          <span class="slider-label">Sensitivity</span>
+          <span id="sens-val" class="slider-value">50%</span>
+        </div>
+        <input id="sens" type="range" min="0" max="100" value="50"
+          oninput="setSens(this.value)">
+        <div class="slider-labels">
+          <span>LOW</span>
+          <span>BALANCED</span>
+          <span>HIGH</span>
+        </div>
+      </div>
+      
+      <div class="level-meter">
+        <div class="level-header">
+          <span>Input Level</span>
+          <span id="level-val">0</span>
+        </div>
+        <div class="level-bar">
+          <div id="level-fill" class="level-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagnostics -->
+    <div class="card">
+      <div class="diag-toggle" onclick="toggleDiag()">
+        <span id="diag-arrow" class="diag-arrow">&#9654;</span>
+        <span class="card-title" style="margin:0">Diagnostics</span>
+      </div>
+      <div id="diag-panel" class="diag-panel">
+        <div class="diag-grid">
+          <div class="diag-item">
+            <span class="diag-label">Noise Floor</span>
+            <span id="d-noise" class="diag-value">--</span>
+          </div>
+          <div class="diag-item">
+            <span class="diag-label">Gate Threshold</span>
+            <span id="d-gate" class="diag-value">--</span>
+          </div>
+          <div class="diag-item">
+            <span class="diag-label">Flatness</span>
+            <span id="d-flat" class="diag-value">--</span>
+          </div>
+          <div class="diag-item">
+            <span class="diag-label">Centroid</span>
+            <span id="d-cent" class="diag-value">--</span>
+          </div>
+          <div class="diag-item">
+            <span class="diag-label">Flux</span>
+            <span id="d-flux" class="diag-value">--</span>
+          </div>
+          <div class="diag-item">
+            <span class="diag-label">Rhythm</span>
+            <span id="d-rhythm" class="diag-value">--</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Dance Control -->
+  <div id="tab-dance" class="tab-content">
+    
+    <!-- Dance Status -->
+    <div id="dance-status" class="dance-status">
+      <div id="dance-text" class="dance-status-text">IDLE</div>
+      <div id="dance-reason" class="dance-reason">Press START to begin</div>
+    </div>
+
+    <!-- Movement Display -->
+    <div class="card">
+      <div class="card-title">Current Movement</div>
+      <div class="move-display">
+        <div class="move-grid">
+          <div></div>
+          <div id="arrow-up" class="move-arrow">&#9650;</div>
+          <div></div>
+          <div id="arrow-left" class="move-arrow">&#9664;</div>
+          <div class="move-center">&#129302;</div>
+          <div id="arrow-right" class="move-arrow">&#9654;</div>
+          <div></div>
+          <div id="arrow-down" class="move-arrow">&#9660;</div>
+          <div></div>
+          <div id="arrow-spin" class="move-spin">&#8635;</div>
+        </div>
+      </div>
+      <div class="move-info">
+        <div id="current-move" class="current-move">--</div>
+        <div class="move-stats">
+          <div class="move-stat">
+            <div class="move-stat-label">Power</div>
+            <div id="move-power" class="move-stat-value">0%</div>
+          </div>
+          <div class="move-stat">
+            <div class="move-stat-label">Patterns</div>
+            <div id="patterns-count" class="move-stat-value">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dance Info -->
+    <div class="card">
+      <div class="card-title">Dance Info</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Pattern</div>
+          <div id="info-pattern" class="info-value">--</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Style</div>
+          <div id="info-style" class="info-value">--</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">BPM</div>
+          <div id="info-bpm" class="info-value">--</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Move</div>
+          <div id="info-move" class="info-value">--</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Band</div>
+          <div id="info-band" class="info-value">--</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Energy</div>
+          <div id="info-energy" class="info-value">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auto Mode Button -->
+    <button id="auto-btn" class="btn-primary" onclick="send('toggle_auto')">
+      START AUTONOMOUS MODE
+    </button>
+
+    <!-- Manual Control -->
+    <div class="card">
+      <div class="card-title">Manual Control</div>
+      <div class="dpad">
+        <div class="dpad-row">
+          <button class="btn-dir hidden"></button>
+          <button class="btn-dir" onmousedown="send('forward')" onmouseup="send('stop')" ontouchstart="send('forward')" ontouchend="send('stop')">&#9650;</button>
+          <button class="btn-dir hidden"></button>
+        </div>
+        <div class="dpad-row">
+          <button class="btn-dir" onmousedown="send('left')" onmouseup="send('stop')" ontouchstart="send('left')" ontouchend="send('stop')">&#9664;</button>
+          <button class="btn-dir" onclick="send('stop')">&#9632;</button>
+          <button class="btn-dir" onmousedown="send('right')" onmouseup="send('stop')" ontouchstart="send('right')" ontouchend="send('stop')">&#9654;</button>
+        </div>
+        <div class="dpad-row">
+          <button class="btn-dir hidden"></button>
+          <button class="btn-dir" onmousedown="send('backward')" onmouseup="send('stop')" ontouchstart="send('backward')" ontouchend="send('stop')">&#9660;</button>
+          <button class="btn-dir hidden"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency Stop -->
+    <button class="btn-stop" onclick="send('stop')">
+      EMERGENCY STOP
+    </button>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-item">
+      <div id="status-audio" class="status-dot"></div>
+      <span>Audio</span>
+    </div>
+    <div class="status-item">
+      <div id="status-music" class="status-dot"></div>
+      <span>Music</span>
+    </div>
+    <span id="status-text" class="status-text">Connecting...</span>
+  </div>
+
+<script>
+  // State
+  let currentTab = 'audio';
+  let lastData = {};
+  let lastTimestamp = 0;  // Track data freshness
+  let waveformSmooth = new Array(64).fill(0);  // Now handles signed values -100 to +100
+  let spectrumSmooth = new Array(32).fill(0);
+  let spectrumPeaks = new Array(32).fill(0);
+  let beatTimer = null;
+  let dataFreshness = 0;  // Counts how many frames since last new data
+
+  // Tab switching
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+  }
+
+  // API
+  function send(cmd) {
+    fetch('/api/control/' + cmd, { method: 'POST' });
+  }
+
+  function setSens(val) {
+    document.getElementById('sens-val').innerText = val + '%';
+    fetch('/api/sens/' + val, { method: 'POST' });
+  }
+
+  function setGain(val) {
+    document.getElementById('gain-val').innerText = val + '%';
+    fetch('/api/gain/' + val, { method: 'POST' });
+  }
+
+  function toggleDiag() {
+    const panel = document.getElementById('diag-panel');
+    const arrow = document.getElementById('diag-arrow');
+    panel.classList.toggle('open');
+    arrow.classList.toggle('open');
+  }
+
+  // Waveform visualization - FULLY DYNAMIC from mic data
+  // Now handles signed waveform data (-100 to +100) for true waveform display
+  function drawWaveform(canvas, data, isBeat, energy) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    const cy = h / 2;
+
+    // Clear
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, w, h);
+
+    // Check for real audio - now data can be negative, so check absolute values
+    if (!data || !data.length) return;
+    const maxAbsVal = Math.max(...data.map(v => Math.abs(v)));
+    const hasAudio = maxAbsVal > 3;
+    
+    // Smooth the incoming mic data (handles signed values now)
+    // Use slower smoothing when data hasn't updated to prevent jitter
+    const smoothFactor = dataFreshness > 2 ? 0.05 : 0.4;
+    const decayFactor = dataFreshness > 2 ? 0.92 : 0.85;
+    
+    for (let i = 0; i < data.length && i < waveformSmooth.length; i++) {
+      const target = hasAudio ? data[i] : 0;
+      // Smoother interpolation for both rise and fall
+      const diff = target - waveformSmooth[i];
+      const speed = Math.abs(diff) > 20 ? smoothFactor * 1.5 : smoothFactor;
+      waveformSmooth[i] += diff * speed;
+      
+      // Gentle decay toward zero when no fresh data
+      if (!hasAudio || dataFreshness > 3) {
+        waveformSmooth[i] *= decayFactor;
+      }
+      // Floor tiny values
+      if (Math.abs(waveformSmooth[i]) < 0.5) waveformSmooth[i] = 0;
+    }
+
+    // Draw center line
+    ctx.strokeStyle = '#2a2a3e';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, cy);
+    ctx.lineTo(w, cy);
+    ctx.stroke();
+
+    // Don't draw if no audio
+    const maxSmooth = Math.max(...waveformSmooth.map(v => Math.abs(v)));
+    if (!hasAudio && maxSmooth < 1) return;
+
+    // Colors: pink on beat, green otherwise
+    const hue = isBeat ? 320 : 160;
+    
+    if (isBeat) {
+      ctx.shadowColor = '#ff0080';
+      ctx.shadowBlur = 20;
+    }
+
+    // Gradient fill - from top to bottom
+    const gradient = ctx.createLinearGradient(0, 0, 0, h);
+    gradient.addColorStop(0, `hsla(${hue}, 100%, 60%, 0.9)`);
+    gradient.addColorStop(0.5, `hsla(${hue}, 100%, 50%, 0.7)`);
+    gradient.addColorStop(1, `hsla(${hue}, 100%, 60%, 0.9)`);
+
+    // Draw TRUE waveform shape using signed values
+    ctx.beginPath();
+    ctx.moveTo(0, cy);
+
+    const bw = w / waveformSmooth.length;
+    
+    // Draw the actual waveform line
+    for (let i = 0; i < waveformSmooth.length; i++) {
+      const x = i * bw + bw / 2;
+      // Value is now -100 to +100, scale to canvas height
+      const amp = (waveformSmooth[i] / 100) * (h * 0.45);
+      const y = cy - amp;  // Negative values go below center, positive above
+      
+      if (i === 0) {
+        ctx.lineTo(x, y);
+      } else {
+        // Smooth curve between points
+        const px = (i - 1) * bw + bw / 2;
+        const pa = (waveformSmooth[i-1] / 100) * (h * 0.45);
+        const py = cy - pa;
+        const cpx = (px + x) / 2;
+        ctx.quadraticCurveTo(px, py, cpx, (py + y) / 2);
+      }
+    }
+    
+    // Close to center line on right
+    ctx.lineTo(w, cy);
+    
+    // Line back along center
+    ctx.lineTo(0, cy);
+    
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    // Also draw a stroke line for clarity
+    ctx.strokeStyle = `hsla(${hue}, 100%, 70%, 0.8)`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < waveformSmooth.length; i++) {
+      const x = i * bw + bw / 2;
+      const amp = (waveformSmooth[i] / 100) * (h * 0.45);
+      const y = cy - amp;
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        const px = (i - 1) * bw + bw / 2;
+        const pa = (waveformSmooth[i-1] / 100) * (h * 0.45);
+        const py = cy - pa;
+        ctx.quadraticCurveTo(px, py, (px + x) / 2, (py + y) / 2);
+      }
+    }
+    ctx.stroke();
+    
+    ctx.shadowBlur = 0;
+  }
+
+  // Spectrum visualization - FULLY DYNAMIC from mic FFT data
+  // Fixed smoothing to prevent glitchiness
+  function drawSpectrum(canvas, data, isBeat) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+
+    // Clear
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, w, h);
+
+    // Check for real audio
+    if (!data || !data.length) return;
+    const maxVal = Math.max(...data);
+    const hasAudio = maxVal > 2;
+
+    // FIXED: More consistent smoothing that prevents glitches
+    // Use the same smoothing regardless of data freshness for consistency
+    // The key is to have smooth transitions, not reactive ones
+    const smoothingFactor = 0.25;  // Consistent smoothing
+    const decayFactor = 0.92;      // Smooth decay when no audio
+    
+    for (let i = 0; i < data.length && i < spectrumSmooth.length; i++) {
+      const target = hasAudio ? data[i] : 0;
+      
+      // Linear interpolation toward target
+      const diff = target - spectrumSmooth[i];
+      
+      // Use different speeds for rising vs falling, but keep them smooth
+      if (diff > 0) {
+        // Rising: faster response but still smooth
+        spectrumSmooth[i] += diff * 0.35;
+      } else {
+        // Falling: slower, smoother decay
+        spectrumSmooth[i] += diff * 0.15;
+      }
+      
+      // Apply additional decay when there's no audio
+      if (!hasAudio) {
+        spectrumSmooth[i] *= decayFactor;
+      }
+      
+      // Peak hold with smooth decay
+      if (spectrumSmooth[i] > spectrumPeaks[i]) {
+        spectrumPeaks[i] = spectrumSmooth[i];
+      } else {
+        spectrumPeaks[i] *= 0.97;  // Slow peak decay
+      }
+      
+      // Floor tiny values to prevent jitter at low levels
+      if (spectrumSmooth[i] < 1) spectrumSmooth[i] = 0;
+      if (spectrumPeaks[i] < 1) spectrumPeaks[i] = 0;
+    }
+
+    const gap = 3;
+    const barCount = spectrumSmooth.length;
+    const bw = (w - gap * (barCount + 1)) / barCount;
+
+    // Draw each frequency bar
+    for (let i = 0; i < spectrumSmooth.length; i++) {
+      const bh = (spectrumSmooth[i] / 100) * h * 0.9;
+      const ph = (spectrumPeaks[i] / 100) * h * 0.9;
+      
+      // Skip if nothing to draw
+      if (bh < 1 && ph < 1) continue;
+      
+      const x = gap + i * (bw + gap);
+      const y = h - bh;
+
+      // Color by frequency: pink=bass, green=mid, cyan=treble
+      let hue;
+      if (i < 8) hue = 320 + (i * 5);        // Bass: pink/magenta
+      else if (i < 20) hue = 140 + ((i - 8) * 3);  // Mid: green
+      else hue = 180 + ((i - 20) * 4);       // Treble: cyan/blue
+      
+      const sat = 85 + (isBeat ? 15 : 0);
+      const lit = 45 + (spectrumSmooth[i] / 100) * 25;
+
+      // Reset shadow for each bar
+      ctx.shadowBlur = 0;
+      
+      // Glow on loud bars (but not too aggressive)
+      if (spectrumSmooth[i] > 50) {
+        ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
+        ctx.shadowBlur = 10;
+      }
+
+      // Bar gradient
+      const grad = ctx.createLinearGradient(x, h, x, y);
+      grad.addColorStop(0, `hsla(${hue}, ${sat}%, ${lit - 15}%, 0.9)`);
+      grad.addColorStop(0.5, `hsla(${hue}, ${sat}%, ${lit}%, 1)`);
+      grad.addColorStop(1, `hsla(${hue}, ${sat}%, ${lit + 15}%, 1)`);
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(x, y, bw, bh, [3, 3, 0, 0]);
+      ctx.fill();
+
+      // Peak indicator line
+      if (ph > bh + 3) {
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = `hsla(${hue}, 100%, 80%, 0.9)`;
+        ctx.fillRect(x, h - ph - 3, bw, 3);
+      }
+      
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // Update all UI elements
+  function updateUI(d) {
+    if (!d) return;
+
+    // Audio type display
+    const typeEl = document.getElementById('audio-type');
+    const confEl = document.getElementById('audio-confidence');
+    let displayType = d.is_muted ? 'MUTED' : (d.is_gated ? 'GATED' : (d.audio_type || 'SILENCE'));
+    
+    if (typeEl) {
+      typeEl.innerText = displayType;
+      typeEl.className = 'audio-type ' + displayType.toLowerCase();
+    }
+    if (confEl) {
+      if (d.is_muted) confEl.innerText = 'Gain is 0 - Audio muted';
+      else if (d.is_gated) confEl.innerText = 'Below noise gate';
+      else confEl.innerText = (d.audio_type_confidence || 0) + '% confidence';
+    }
+
+    // Audio indicator
+    const indicator = document.getElementById('audio-indicator');
+    if (indicator) {
+      if (d.is_muted) {
+        indicator.className = 'audio-indicator muted';
+        indicator.innerText = 'MUTED - Increase gain';
+      } else if (d.is_gated) {
+        indicator.className = 'audio-indicator gated';
+        indicator.innerText = 'GATED - Signal too low';
+      } else {
+        indicator.className = 'audio-indicator listening';
+        indicator.innerText = 'MIC ACTIVE - LISTENING';
+      }
+    }
+
+    // Energy bars
+    const setBar = (id, val) => {
+      const bar = document.getElementById(id);
+      const valEl = document.getElementById(id + '-val');
+      if (bar) bar.style.width = val + '%';
+      if (valEl) valEl.innerText = val + '%';
+    };
+    setBar('energy-overall', d.energy || 0);
+    setBar('energy-bass', d.energy_bass || 0);
+    setBar('energy-mid', d.energy_mid || 0);
+    setBar('energy-treble', d.energy_treble || 0);
+
+    // BPM (from real-time detection)
+    const bpmEl = document.getElementById('bpm-value');
+    if (bpmEl) bpmEl.innerText = d.bpm || '--';
+    
+    // Confidence dots
+    const dots = document.querySelectorAll('.conf-dot');
+    const active = Math.round((d.bpm_confidence || 0) / 10);
+    dots.forEach((dot, i) => dot.classList.toggle('active', i < active));
+
+    // Beat indicator
+    if (d.is_beat) {
+      const beat = document.getElementById('beat-indicator');
+      if (beat) beat.classList.add('active');
+      if (beatTimer) clearTimeout(beatTimer);
+      beatTimer = setTimeout(() => {
+        if (beat) beat.classList.remove('active');
+      }, 100);
+    }
+
+    // Level meter
+    const levelFill = document.getElementById('level-fill');
+    const levelVal = document.getElementById('level-val');
+    const level = Math.min(100, (d.raw_rms || 0) / 5);
+    if (levelFill) levelFill.style.width = level + '%';
+    if (levelVal) levelVal.innerText = d.raw_rms || 0;
+
+    // Sliders
+    const gainEl = document.getElementById('gain');
+    const sensEl = document.getElementById('sens');
+    if (gainEl && !gainEl.matches(':active')) {
+      gainEl.value = d.gain || 50;
+      document.getElementById('gain-val').innerText = (d.gain || 50) + '%';
+    }
+    if (sensEl && !sensEl.matches(':active')) {
+      sensEl.value = d.sensitivity || 50;
+      document.getElementById('sens-val').innerText = (d.sensitivity || 50) + '%';
+    }
+
+    // Dance status
+    const danceStatus = document.getElementById('dance-status');
+    const danceText = document.getElementById('dance-text');
+    const danceReason = document.getElementById('dance-reason');
+    
+    if (d.is_dancing) {
+      if (danceStatus) danceStatus.classList.add('dancing');
+      if (danceText) danceText.innerText = 'DANCING';
+      if (danceReason) danceReason.innerText = d.beat_triggered ? 'Beat Sync' : 'Timer Sync';
+    } else if (d.autonomous) {
+      if (danceStatus) danceStatus.classList.remove('dancing');
+      if (danceText) danceText.innerText = 'LISTENING';
+      if (danceReason) danceReason.innerText = d.dance_reason || 'Waiting for music...';
+    } else {
+      if (danceStatus) danceStatus.classList.remove('dancing');
+      if (danceText) danceText.innerText = 'IDLE';
+      if (danceReason) danceReason.innerText = 'Press START to begin';
+    }
+
+    // Movement arrows
+    const arrows = { up: 'forward', down: 'backward', left: 'left', right: 'right' };
+    Object.entries(arrows).forEach(([dir, move]) => {
+      const el = document.getElementById('arrow-' + dir);
+      if (el) el.classList.toggle('active', d.current_move === move);
+    });
+    const spinEl = document.getElementById('arrow-spin');
+    if (spinEl) spinEl.classList.toggle('active', d.current_move === 'spin');
+
+    // Current move name
+    const moveEl = document.getElementById('current-move');
+    if (moveEl) {
+      if (d.is_dancing && d.current_move && d.current_move !== 'none') {
+        moveEl.innerText = d.current_move.toUpperCase();
+      } else {
+        moveEl.innerText = '--';
+      }
+    }
+
+    // Move stats
+    const powerEl = document.getElementById('move-power');
+    const patternsEl = document.getElementById('patterns-count');
+    if (powerEl) powerEl.innerText = (d.move_intensity || 0) + '%';
+    if (patternsEl) patternsEl.innerText = d.patterns_completed || 0;
+
+    // Dance info grid
+    const setInfo = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = val || '--';
+    };
+    setInfo('info-pattern', d.pattern_name);
+    setInfo('info-style', d.style);
+    setInfo('info-bpm', d.bpm);
+    setInfo('info-move', d.step_info);
+    setInfo('info-band', d.dominant_band);
+    setInfo('info-energy', (d.energy || 0) + '%');
+
+    // Auto button
+    const autoBtn = document.getElementById('auto-btn');
+    if (autoBtn) {
+      if (d.autonomous) {
+        autoBtn.classList.add('active');
+        autoBtn.innerText = 'STOP AUTONOMOUS MODE';
+      } else {
+        autoBtn.classList.remove('active');
+        autoBtn.innerText = 'START AUTONOMOUS MODE';
+      }
+    }
+
+    // Diagnostics
+    const setDiag = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = val ?? '--';
+    };
+    setDiag('d-noise', d.noise_floor);
+    setDiag('d-gate', d.noise_gate_threshold);
+    setDiag('d-flat', d.spectral_flatness !== undefined ? d.spectral_flatness + '%' : '--');
+    setDiag('d-cent', d.spectral_centroid !== undefined ? d.spectral_centroid + 'Hz' : '--');
+    setDiag('d-flux', d.spectral_flux);
+    setDiag('d-rhythm', d.rhythm_regularity !== undefined ? d.rhythm_regularity + '%' : '--');
+
+    // Status bar
+    const statusAudio = document.getElementById('status-audio');
+    const statusMusic = document.getElementById('status-music');
+    const statusText = document.getElementById('status-text');
+    if (statusAudio) statusAudio.className = 'status-dot ' + (d.audio_ok !== false && !d.is_muted ? 'ok' : d.is_muted ? 'warn' : 'err');
+    if (statusMusic) statusMusic.className = 'status-dot ' + (d.music_gate ? 'ok' : 'warn');
+    if (statusText) statusText.innerText = d.is_muted ? 'Muted' : (d.status || 'Connected');
+  }
+
+  // Setup canvases for high DPI
+  function setupCanvases() {
+    const canvases = [
+      { id: 'waveform-canvas', h: 100 },
+      { id: 'spectrum-canvas', h: 130 }
+    ];
+    
+    canvases.forEach(({ id, h }) => {
+      const canvas = document.getElementById(id);
+      if (canvas) {
+        const container = canvas.parentElement;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = container.clientWidth * dpr;
+        canvas.height = h * dpr;
+        canvas.style.width = container.clientWidth + 'px';
+        canvas.style.height = h + 'px';
+        canvas.getContext('2d').scale(dpr, dpr);
+      }
+    });
+  }
+
+  // Fetch data from backend
+  async function fetchData() {
+    try {
+      const res = await fetch('/api/status');
+      const newData = await res.json();
+      
+      // Check if this is actually new data using timestamp
+      const newTimestamp = newData.data_timestamp || 0;
+      if (newTimestamp !== lastTimestamp) {
+        lastTimestamp = newTimestamp;
+        dataFreshness = 0;  // Reset freshness counter - we have new data
+        lastData = newData;
+      } else {
+        // Same data as before, increment staleness counter
+        dataFreshness++;
+      }
+    } catch (e) {
+      console.error('Fetch error:', e);
+      dataFreshness++;  // Treat errors as stale data
+    }
+  }
+
+  // Render loop - draws visualizations from live mic data
+  function render() {
+    const d = lastData || {};
+    const waveCanvas = document.getElementById('waveform-canvas');
+    const specCanvas = document.getElementById('spectrum-canvas');
+    
+    // Pass live mic data to visualizers with safe defaults
+    drawWaveform(waveCanvas, d.waveform || [], d.is_beat || false, d.energy || 0);
+    drawSpectrum(specCanvas, d.spectrum || [], d.is_beat || false);
+    
+    requestAnimationFrame(render);
+  }
+
+  // Initialize
+  window.addEventListener('DOMContentLoaded', () => {
+    setupCanvases();
+    // Fetch at ~22fps (45ms) to match backend's ~46ms update rate
+    // This ensures we catch each new data packet without too much redundancy
+    setInterval(fetchData, 45);
+    // UI update synced to render for smoother updates
+    setInterval(() => updateUI(lastData), 50);  // 20fps UI update
+    requestAnimationFrame(render);  // 60fps visualizations
+  });
+
+  window.addEventListener('resize', setupCanvases);
+</script>
+
+</body>
+</html>

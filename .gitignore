@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Backup files
+*.old
+*.backup
+*_old*.py
+*_old*.html
+*_v1_working.*
+robot_backend.html
+robot_server.py
+music_gate.py
+rms_live.py
+
+# Audio test files
+*.wav
+*.mp3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.venv/
+venv/
+ENV/
+
+# Claude Code
+.claude/
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
