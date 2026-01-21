@@ -1,5 +1,15 @@
 # Robot Rave
 
+<div align="center">
+  <img src="ravitto_360.gif" alt="Ravitto - The Dancing Robot" width="400">
+  <br>
+  <em>Meet Ravitto - The Dancing Robot!</em>
+  <br><br>
+  <a href="https://sergiopesch.github.io/robot-rave-/ravitto_studio.html">View Interactive 360° Studio</a>
+</div>
+
+<br>
+
 A music-reactive dancing robot built on Raspberry Pi that dances to the beat of your music with LED matrix eyes that express emotions.
 
 ## Origin
@@ -98,8 +108,12 @@ Open a browser and navigate to:
 robot-rave/
 ├── robot_backend.py      # Main backend server with all logic
 ├── robot_frontend.html   # Web interface (served by Flask)
-├── README.md            # This file
-└── AGENT.md             # AI assistant guidelines
+├── ravitto_studio.html   # Interactive 360° photo viewer
+├── ravitto_360.gif       # Robot showcase animation
+├── images/               # Robot photos
+├── README.md             # This file
+├── CLAUDE.md             # Claude Code guidelines
+└── AGENT.md              # AI assistant guidelines
 ```
 
 ## API Endpoints

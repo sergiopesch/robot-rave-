@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ravitto - 360° Photo Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(135deg, #c9ffd4 0%, #d4ffe8 25%, #e8fff0 50%, #d4ffe8 75%, #c9ffd4 100%);
+      min-height: 100vh;
+      font-family: 'Space Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 30px 20px;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      color: #ff0080;
+      text-shadow: 3px 3px 0 #00ff88, -1px -1px 0 #00ff88;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+    }
+
+    .header .subtitle {
+      font-size: 14px;
+      color: #ff0080;
+      letter-spacing: 6px;
+      font-weight: 500;
+    }
+
+    /* Studio Viewer */
+    .studio-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 3px solid #00ff88;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 40px rgba(0, 255, 136, 0.2);
+    }
+
+    .viewer-container {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, #1a1a2e 0%, #2d1f3d 100%);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .viewer-container:active {
+      cursor: grabbing;
+    }
+
+    .viewer-container img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      pointer-events: none;
+      padding: 20px;
+    }
+
+    .viewer-container img.active {
+      opacity: 1;
+    }
+
+    /* Drag hint overlay */
+    .drag-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: #00ff88;
+      padding: 15px 25px;
+      border-radius: 30px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    .drag-hint.hidden {
+      opacity: 0;
+    }
+
+    .drag-hint svg {
+      width: 24px;
+      height: 24px;
+      animation: swipe 1.5s ease-in-out infinite;
+    }
+
+    @keyframes swipe {
+      0%, 100% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+    }
+
+    /* Progress indicators */
+    .progress-container {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .progress-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ddd;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .progress-dot:hover {
+      background: #ff0080;
+      transform: scale(1.2);
+    }
+
+    .progress-dot.active {
+      background: #ff0080;
+      box-shadow: 0 0 10px rgba(255, 0, 128, 0.5);
+      transform: scale(1.3);
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      background: linear-gradient(135deg, #ff0080 0%, #cc0066 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .control-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(255, 0, 128, 0.4);
+    }
+
+    .control-btn.active {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+      color: #1a1a2e;
+    }
+
+    .control-btn.secondary {
+      background: linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 100%);
+    }
+
+    /* Angle display */
+    .angle-display {
+      text-align: center;
+      margin-top: 15px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      color: #ff0080;
+    }
+
+    .angle-display span {
+      color: #00ff88;
+    }
+
+    /* Info section */
+    .info-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 3px solid #00ff88;
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .info-card h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px;
+      color: #ff0080;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+    }
+
+    .info-item {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .info-item .label {
+      font-size: 10px;
+      color: #888;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .info-item .value {
+      font-size: 14px;
+      color: #00ff88;
+      font-weight: bold;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 30px;
+      color: #555;
+      font-size: 12px;
+    }
+
+    .footer a {
+      color: #ff0080;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 600px) {
+      .header h1 {
+        font-size: 32px;
+      }
+
+      .studio-card {
+        padding: 15px;
+      }
+
+      .control-btn {
+        padding: 10px 18px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>RAVITTO</h1>
+      <div class="subtitle">360° PHOTO STUDIO</div>
+    </div>
+
+    <!-- Main Viewer -->
+    <div class="studio-card">
+      <div class="viewer-container" id="viewer">
+        <img src="images/ravitto_1.jpg" alt="Ravitto angle 1" class="active">
+        <img src="images/ravitto_2.jpg" alt="Ravitto angle 2">
+        <img src="images/ravitto_3.jpg" alt="Ravitto angle 3">
+        <img src="images/ravitto_4.jpg" alt="Ravitto angle 4">
+        <img src="images/ravitto_5.jpg" alt="Ravitto angle 5">
+
+        <div class="drag-hint" id="dragHint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+          Drag to rotate
+        </div>
+      </div>
+
+      <!-- Progress dots -->
+      <div class="progress-container" id="progress">
+        <div class="progress-dot active" data-index="0"></div>
+        <div class="progress-dot" data-index="1"></div>
+        <div class="progress-dot" data-index="2"></div>
+        <div class="progress-dot" data-index="3"></div>
+        <div class="progress-dot" data-index="4"></div>
+      </div>
+
+      <!-- Angle display -->
+      <div class="angle-display">
+        <span id="angleValue">0</span>°
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="control-btn secondary" id="prevBtn">&#9664; Prev</button>
+        <button class="control-btn" id="autoRotateBtn">Auto Rotate</button>
+        <button class="control-btn secondary" id="nextBtn">Next &#9654;</button>
+      </div>
+    </div>
+
+    <!-- Robot Info -->
+    <div class="info-card">
+      <h2>Robot Specs</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="label">Brain</div>
+          <div class="value">Raspberry Pi 4</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Motors</div>
+          <div class="value">2x DC Motors</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Eyes</div>
+          <div class="value">8x16 LED Matrix</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Audio</div>
+          <div class="value">USB Microphone</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Body</div>
+          <div class="value">Cardboard & Love</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Origin</div>
+          <div class="value">SoTa Hackathon</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Created by <a href="https://x.com/sergiopesch" target="_blank">@sergiopesch</a>
+      <br><br>
+      <a href="index.html">Back to Robot Rave</a> | <a href="https://github.com/sergiopesch/robot-rave-">GitHub</a>
+    </div>
+  </div>
+
+  <script>
+    // Elements
+    const viewer = document.getElementById('viewer');
+    const images = viewer.querySelectorAll('img');
+    const dots = document.querySelectorAll('.progress-dot');
+    const angleDisplay = document.getElementById('angleValue');
+    const dragHint = document.getElementById('dragHint');
+    const autoRotateBtn = document.getElementById('autoRotateBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    // State
+    let currentIndex = 0;
+    let isDragging = false;
+    let startX = 0;
+    let autoRotateInterval = null;
+    let hasInteracted = false;
+
+    const totalImages = images.length;
+    const anglePerImage = 360 / totalImages;
+
+    // Update display
+    function updateDisplay() {
+      images.forEach((img, i) => {
+        img.classList.toggle('active', i === currentIndex);
+      });
+
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+
+      // Calculate angle (distribute evenly around 360)
+      const angle = Math.round(currentIndex * anglePerImage);
+      angleDisplay.textContent = angle;
+    }
+
+    // Navigate to specific index
+    function goToIndex(index) {
+      currentIndex = ((index % totalImages) + totalImages) % totalImages;
+      updateDisplay();
+    }
+
+    // Next/Previous
+    function next() {
+      goToIndex(currentIndex + 1);
+    }
+
+    function prev() {
+      goToIndex(currentIndex - 1);
+    }
+
+    // Hide drag hint after interaction
+    function hideHint() {
+      if (!hasInteracted) {
+        hasInteracted = true;
+        dragHint.classList.add('hidden');
+      }
+    }
+
+    // Mouse/Touch drag handling
+    function handleDragStart(e) {
+      isDragging = true;
+      startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+      hideHint();
+      stopAutoRotate();
+    }
+
+    function handleDragMove(e) {
+      if (!isDragging) return;
+
+      const currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+      const diff = currentX - startX;
+
+      // Change image every 50px of drag
+      const threshold = 50;
+      if (Math.abs(diff) > threshold) {
+        if (diff > 0) {
+          prev();
+        } else {
+          next();
+        }
+        startX = currentX;
+      }
+    }
+
+    function handleDragEnd() {
+      isDragging = false;
+    }
+
+    // Auto rotate
+    function startAutoRotate() {
+      if (autoRotateInterval) return;
+
+      autoRotateInterval = setInterval(next, 800);
+      autoRotateBtn.classList.add('active');
+      autoRotateBtn.textContent = 'Stop Rotation';
+      hideHint();
+    }
+
+    function stopAutoRotate() {
+      if (autoRotateInterval) {
+        clearInterval(autoRotateInterval);
+        autoRotateInterval = null;
+        autoRotateBtn.classList.remove('active');
+        autoRotateBtn.textContent = 'Auto Rotate';
+      }
+    }
+
+    function toggleAutoRotate() {
+      if (autoRotateInterval) {
+        stopAutoRotate();
+      } else {
+        startAutoRotate();
+      }
+    }
+
+    // Event listeners
+    viewer.addEventListener('mousedown', handleDragStart);
+    viewer.addEventListener('mousemove', handleDragMove);
+    viewer.addEventListener('mouseup', handleDragEnd);
+    viewer.addEventListener('mouseleave', handleDragEnd);
+
+    viewer.addEventListener('touchstart', handleDragStart, { passive: true });
+    viewer.addEventListener('touchmove', handleDragMove, { passive: true });
+    viewer.addEventListener('touchend', handleDragEnd);
+
+    // Dot clicks
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        stopAutoRotate();
+        goToIndex(parseInt(dot.dataset.index));
+        hideHint();
+      });
+    });
+
+    // Button controls
+    autoRotateBtn.addEventListener('click', toggleAutoRotate);
+    prevBtn.addEventListener('click', () => { stopAutoRotate(); prev(); hideHint(); });
+    nextBtn.addEventListener('click', () => { stopAutoRotate(); next(); hideHint(); });
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { stopAutoRotate(); prev(); hideHint(); }
+      if (e.key === 'ArrowRight') { stopAutoRotate(); next(); hideHint(); }
+      if (e.key === ' ') { e.preventDefault(); toggleAutoRotate(); }
+    });
+
+    // Initial display
+    updateDisplay();
+  </script>
+</body>
+</html>
