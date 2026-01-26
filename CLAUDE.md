@@ -10,11 +10,16 @@ Robot Rave is a Raspberry Pi-based music-reactive dancing robot with LED matrix 
 
 - **Backend**: `robot_backend.py` - Single-file Flask server (~2200 lines) containing all logic
 - **Frontend**: `robot_frontend.html` - Web control interface served by Flask
+- **3D Viewer**: `ravitto_splat.html` - WebGL Gaussian splat particle visualization
+- **Photo Studio**: `ravitto_studio.html` - Interactive 360° photo viewer
 
 ```
 USB Microphone → Audio Analysis → Beat Detection → Dance Engine → Motors (GPIO PWM)
                                                               → LED Eyes (I2C)
 Web Browser ←→ Flask Server (port 5000)
+            ├── /         → Control Panel
+            ├── /splat    → 3D Gaussian Splat Viewer
+            └── /studio   → 360° Photo Studio
 ```
 
 ## Key Code Locations in robot_backend.py
@@ -59,7 +64,9 @@ curl -s http://localhost:5000/api/status | python3 -m json.tool
 
 ## API Endpoints
 
-- `GET /` - Web frontend
+- `GET /` - Web frontend (control panel)
+- `GET /splat` - 3D Gaussian splat viewer (WebGL particle visualization)
+- `GET /studio` - Interactive 360° photo studio
 - `GET /api/status` - Robot state JSON
 - `POST /api/control/<cmd>` - Commands: forward, backward, left, right, stop, toggle_auto
 - `POST /api/sens/<val>` - Set sensitivity (0-100)
@@ -67,9 +74,25 @@ curl -s http://localhost:5000/api/status | python3 -m json.tool
 - `POST /api/eyes/<expression>` - Set eye expression
 - `POST /api/eyes/special/<type>` - Trigger special animation
 
+## Gaussian Splat Viewer (ravitto_splat.html)
+
+WebGL-based 3D particle visualization with:
+- **Particle System**: 25k-200k particles forming robot shape
+- **Shaders**: Custom vertex/fragment shaders for Gaussian blur effect
+- **Controls**: Orbital camera (drag/scroll/touch), quality selector, color modes
+- **Effects**: Explode animation, auto-rotate, floating particles
+- **State**: Managed in global `state` object (rotation, zoom, particles, etc.)
+
+Key functions:
+- `generateRobotParticles()` - Creates particle positions/colors for robot shape
+- `createViewMatrix()` / `createPerspectiveMatrix()` - Camera math
+- `render()` - Main animation loop (~60 FPS)
+- `updateBuffers()` - Updates WebGL buffers when particle count changes
+
 ## Development Notes
 
 - **Thread safety**: Use `state_lock` when accessing/modifying `ui_state`
 - **LED graceful degradation**: Code handles missing LED hardware automatically
 - **GPIO permissions**: Run with `sudo` or ensure user is in `gpio` group
 - **Port conflicts**: Kill existing processes on port 5000 before restarting
+- **WebGL fallback**: Splat viewer checks for WebGL support and alerts if unavailable

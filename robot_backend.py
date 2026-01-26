@@ -2330,6 +2330,26 @@ def index():
         return "Error: robot_frontend.html not found in " + SCRIPT_DIR, 404
 
 
+@app.route("/splat")
+def splat():
+    html_path = os.path.join(SCRIPT_DIR, "ravitto_splat.html")
+    try:
+        with open(html_path, 'r') as f:
+            return f.read(), 200, {'Content-Type': 'text/html'}
+    except FileNotFoundError:
+        return "Error: ravitto_splat.html not found in " + SCRIPT_DIR, 404
+
+
+@app.route("/studio")
+def studio():
+    html_path = os.path.join(SCRIPT_DIR, "ravitto_studio.html")
+    try:
+        with open(html_path, 'r') as f:
+            return f.read(), 200, {'Content-Type': 'text/html'}
+    except FileNotFoundError:
+        return "Error: ravitto_studio.html not found in " + SCRIPT_DIR, 404
+
+
 @app.route("/api/status", methods=["GET"])
 def status():
     with state_lock:

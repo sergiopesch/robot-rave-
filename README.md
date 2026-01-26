@@ -6,6 +6,8 @@
   <em>Meet Ravitto - The Dancing Robot!</em>
   <br><br>
   <a href="https://sergiopesch.github.io/robot-rave-/ravitto_studio.html">View Interactive 360° Studio</a>
+  &nbsp;|&nbsp;
+  <a href="https://sergiopesch.github.io/robot-rave-/ravitto_splat.html">Experience 3D Gaussian Splat</a>
 </div>
 
 <br>
@@ -25,6 +27,21 @@ This project started as a hackathon project at the **SoTa (State of the Art) eve
 - **Web Interface**: Beautiful responsive control panel accessible from any device on the network
 - **Audio Visualization**: Real-time waveform and spectrum analyzer display
 - **Smart Silence Detection**: Robot stops dancing within ~500ms when music stops
+- **3D Gaussian Splat Viewer**: Immersive WebGL visualization of Ravitto with 50k+ particles
+
+## 3D Gaussian Splat Viewer
+
+Experience Ravitto in a stunning 3D particle cloud visualization! The Gaussian splat viewer renders the robot as thousands of floating particles with realistic colors and lighting.
+
+**Features:**
+- **50,000+ Particles**: High-fidelity point cloud forming Ravitto's shape
+- **Orbital Controls**: Drag to rotate, scroll to zoom, double-click to reset
+- **Quality Levels**: 1x (25k) to 8x (200k) particles for any device
+- **Color Modes**: Normal, Neon, Thermal, and Golden rendering styles
+- **Explode Effect**: Watch particles burst outward and reform
+- **Auto-Rotate**: Cinematic orbiting camera animation
+
+Access at `/splat` when running the backend, or view the [live demo](https://sergiopesch.github.io/robot-rave-/ravitto_splat.html).
 
 ## Hardware Requirements
 
@@ -109,6 +126,7 @@ robot-rave/
 ├── robot_backend.py      # Main backend server with all logic
 ├── robot_frontend.html   # Web interface (served by Flask)
 ├── ravitto_studio.html   # Interactive 360° photo viewer
+├── ravitto_splat.html    # 3D Gaussian splat WebGL viewer
 ├── ravitto_360.gif       # Robot showcase animation
 ├── images/               # Robot photos
 ├── README.md             # This file
@@ -121,6 +139,8 @@ robot-rave/
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/` | GET | Serves the web frontend |
+| `/splat` | GET | 3D Gaussian splat viewer |
+| `/studio` | GET | Interactive 360° photo studio |
 | `/api/status` | GET | Returns current robot state as JSON |
 | `/api/control/<cmd>` | POST | Send control commands (forward, backward, left, right, stop, toggle_auto) |
 | `/api/sens/<val>` | POST | Set sensitivity (0-100) |
