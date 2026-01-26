@@ -674,6 +674,7 @@
         `;
 
         // Fragment shader for particles
+        // Note: Using float for colorMode for WebGL 1.0 compatibility
         const fragmentShaderSource = `
             precision mediump float;
 
@@ -681,7 +682,7 @@
             varying float v_alpha;
 
             uniform float u_time;
-            uniform int u_colorMode;
+            uniform float u_colorMode;
 
             void main() {
                 // Gaussian falloff for splat effect
@@ -695,18 +696,18 @@
 
                 vec3 color = v_color.rgb;
 
-                // Color modes
-                if (u_colorMode == 1) {
-                    // Neon mode
+                // Color modes (using float comparisons for WebGL 1.0 compatibility)
+                if (u_colorMode > 0.5 && u_colorMode < 1.5) {
+                    // Neon mode (colorMode ~= 1)
                     float t = u_time * 0.5;
                     color = mix(color, vec3(1.0, 0.0, 0.5), sin(t + v_color.r * 6.28) * 0.3 + 0.3);
                     color = mix(color, vec3(0.0, 1.0, 0.53), cos(t + v_color.g * 6.28) * 0.3 + 0.3);
-                } else if (u_colorMode == 2) {
-                    // Thermal mode
+                } else if (u_colorMode > 1.5 && u_colorMode < 2.5) {
+                    // Thermal mode (colorMode ~= 2)
                     float temp = (v_color.r + v_color.g + v_color.b) / 3.0;
                     color = vec3(temp, temp * 0.3, 1.0 - temp);
-                } else if (u_colorMode == 3) {
-                    // Golden mode
+                } else if (u_colorMode > 2.5 && u_colorMode < 3.5) {
+                    // Golden mode (colorMode ~= 3)
                     float lum = (v_color.r + v_color.g + v_color.b) / 3.0;
                     color = vec3(1.0, 0.84, 0.0) * lum + vec3(0.8, 0.5, 0.2) * (1.0 - lum);
                 }
@@ -1044,7 +1045,7 @@
             gl.uniform1f(uniforms.time, time);
             gl.uniform1f(uniforms.explosion, state.explosionProgress);
             gl.uniform1f(uniforms.particleScale, state.qualityMultiplier * 0.5);
-            gl.uniform1i(uniforms.colorMode, state.colorMode);
+            gl.uniform1f(uniforms.colorMode, state.colorMode);
 
             // Draw particles
             gl.drawArrays(gl.POINTS, 0, state.particles.length);
