@@ -1,13 +1,13 @@
 # Robot Rave
 
 <div align="center">
-  <img src="ravitto_360.gif" alt="Ravitto - The Dancing Robot" width="400">
+  <a href="https://sergiopesch.github.io/robot-rave/">
+    <img src="ravitto_360.gif" alt="Ravitto - The Dancing Robot" width="400">
+  </a>
   <br>
   <em>Meet Ravitto - The Dancing Robot!</em>
   <br><br>
-  <a href="https://sergiopesch.github.io/robot-rave-/ravitto_studio.html">View Interactive 360° Studio</a>
-  &nbsp;|&nbsp;
-  <a href="https://sergiopesch.github.io/robot-rave-/ravitto_splat.html">Experience 3D Gaussian Splat</a>
+  <a href="https://sergiopesch.github.io/robot-rave/">Experience 3D Gaussian Splat Viewer</a>
 </div>
 
 <br>
