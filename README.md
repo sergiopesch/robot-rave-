@@ -41,7 +41,17 @@ Experience Ravitto in a stunning 3D particle cloud visualization! The Gaussian s
 - **Explode Effect**: Watch particles burst outward and reform
 - **Auto-Rotate**: Cinematic orbiting camera animation
 
+**Browser Requirements:**
+- Modern browser with WebGL support (Chrome, Firefox, Safari, Edge)
+- Hardware acceleration enabled
+- For best performance: dedicated GPU recommended for 4x/8x quality modes
+
 Access at `/splat` when running the backend, or view the [live demo](https://sergiopesch.github.io/robot-rave-/ravitto_splat.html).
+
+**Troubleshooting:**
+- If the viewer shows a black screen, check that WebGL is enabled in your browser
+- For slow performance, try reducing quality to 1x or 2x mode
+- On mobile devices, start with 1x quality for smoother experience
 
 ## Hardware Requirements
 

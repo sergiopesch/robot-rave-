@@ -483,7 +483,7 @@
 
     <!-- Header -->
     <header id="header">
-        <div class="logo" onclick="window.location.href='/'">RAVITTO<span>SPLAT</span></div>
+        <div class="logo" onclick="window.location.href='./index.html'">RAVITTO<span>SPLAT</span></div>
         <div class="header-right">
             <div class="splat-badge">3D GAUSSIAN SPLATTING</div>
         </div>
@@ -602,7 +602,10 @@
         const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
 
         if (!gl) {
-            alert('WebGL not supported!');
+            alert('WebGL not supported! Please use a modern browser with WebGL support.');
+            document.getElementById('loading-text').textContent = 'ERROR: WebGL not supported';
+            document.getElementById('loading-bar').style.background = '#ff4444';
+            throw new Error('WebGL not supported');
         }
 
         // Global state
@@ -733,6 +736,11 @@
         function createProgram(vertexSource, fragmentSource) {
             const vertexShader = compileShader(vertexSource, gl.VERTEX_SHADER);
             const fragmentShader = compileShader(fragmentSource, gl.FRAGMENT_SHADER);
+
+            if (!vertexShader || !fragmentShader) {
+                console.error('Shader compilation failed');
+                return null;
+            }
 
             const program = gl.createProgram();
             gl.attachShader(program, vertexShader);
@@ -892,6 +900,14 @@
 
         function initWebGL() {
             program = createProgram(vertexShaderSource, fragmentShaderSource);
+
+            if (!program) {
+                console.error('Failed to create WebGL program');
+                document.getElementById('loading-text').textContent = 'ERROR: Shader compilation failed';
+                document.getElementById('loading-bar').style.background = '#ff4444';
+                return false;
+            }
+
             gl.useProgram(program);
 
             // Get attribute and uniform locations
@@ -1195,7 +1211,9 @@
             }
 
             // Initialize everything
-            initWebGL();
+            if (!initWebGL()) {
+                return; // Stop loading if WebGL init failed
+            }
             state.particles = generateRobotParticles(state.particleCount);
             updateBuffers();
             resize();
