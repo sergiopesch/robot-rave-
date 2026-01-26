@@ -633,6 +633,8 @@
 
         // Vertex shader for particles
         const vertexShaderSource = `
+            precision highp float;
+
             attribute vec3 a_position;
             attribute vec4 a_color;
             attribute float a_size;
@@ -719,6 +721,13 @@
             }
         `;
 
+        // Show shader error on the loading screen
+        function showShaderError(message) {
+            console.error(message);
+            document.getElementById('loading-text').textContent = 'ERROR: ' + message.substring(0, 100);
+            document.getElementById('loading-bar').style.background = '#ff4444';
+        }
+
         // Compile shader
         function compileShader(source, type) {
             const shader = gl.createShader(type);
@@ -726,7 +735,9 @@
             gl.compileShader(shader);
 
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                const errorLog = gl.getShaderInfoLog(shader);
+                const shaderType = type === gl.VERTEX_SHADER ? 'VERTEX' : 'FRAGMENT';
+                showShaderError(shaderType + ' SHADER: ' + errorLog);
                 gl.deleteShader(shader);
                 return null;
             }
@@ -739,7 +750,6 @@
             const fragmentShader = compileShader(fragmentSource, gl.FRAGMENT_SHADER);
 
             if (!vertexShader || !fragmentShader) {
-                console.error('Shader compilation failed');
                 return null;
             }
 
@@ -749,7 +759,8 @@
             gl.linkProgram(program);
 
             if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                console.error('Program link error:', gl.getProgramInfoLog(program));
+                const errorLog = gl.getProgramInfoLog(program);
+                showShaderError('LINK: ' + errorLog);
                 return null;
             }
             return program;
