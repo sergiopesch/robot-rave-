@@ -80,29 +80,37 @@ The silence detection logic is at line ~2090. Key thresholds:
 python3 robot_backend.py
 
 # With sudo (for GPIO access)
-sudo python3 robot_backend.py
+sudo --preserve-env=ROBOT_API_TOKEN,ROBOT_BIND_HOST python3 robot_backend.py
 ```
 
 Access at: `http://localhost:5000` or `http://<pi-ip>:5000`
+
+## Web control security
+
+Set a random `ROBOT_API_TOKEN` before starting the backend (for example, generate one with `python3 -c 'import secrets; print(secrets.token_urlsafe(32))'`). Missing/invalid configuration stops before hardware initialization. Enter that token in the frontend; all API routes require its Bearer header. The default bind address is `127.0.0.1`; use SSH forwarding or a TLS proxy for remote access. `ROBOT_BIND_HOST` must be an explicit IP address for deliberate network binding. Plain LAN HTTP does not encrypt the token.
+
+If using sudo, explicitly preserve only `ROBOT_API_TOKEN` and any configured `ROBOT_BIND_HOST` with `sudo --preserve-env=ROBOT_API_TOKEN,ROBOT_BIND_HOST python3 robot_backend.py`. Do not put secrets in command arguments or URLs.
+
+Hardware-free regression checks: `python3 -m unittest discover -s tests -v` (Flask and NumPy required), then `node --test tests/test_frontend.cjs`. These mock motors/eyes and execute only the web section; full Raspberry Pi behavior remains a separate operator check.
 
 ## Testing
 
 ### Test Motor Control
 ```bash
-curl -X POST http://localhost:5000/api/control/forward
+curl -H "Authorization: Bearer $ROBOT_API_TOKEN" -X POST http://localhost:5000/api/control/forward
 sleep 0.5
-curl -X POST http://localhost:5000/api/control/stop
+curl -H "Authorization: Bearer $ROBOT_API_TOKEN" -X POST http://localhost:5000/api/control/stop
 ```
 
 ### Test Autonomous Mode
 ```bash
-curl -X POST http://localhost:5000/api/control/toggle_auto
-curl -s http://localhost:5000/api/status | python3 -m json.tool
+curl -H "Authorization: Bearer $ROBOT_API_TOKEN" -X POST http://localhost:5000/api/control/toggle_auto
+curl -H "Authorization: Bearer $ROBOT_API_TOKEN" -s http://localhost:5000/api/status | python3 -m json.tool
 ```
 
 ### Check Audio Status
 ```bash
-curl -s http://localhost:5000/api/status | python3 -c "
+curl -H "Authorization: Bearer $ROBOT_API_TOKEN" -s http://localhost:5000/api/status | python3 -c "
 import sys,json
 d=json.load(sys.stdin)
 print(f'Energy: {d[\"energy\"]}%')

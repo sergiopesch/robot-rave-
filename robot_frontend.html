@@ -729,6 +729,13 @@
     <div class="subtitle">THE DANCING ROBOT</div>
   </div>
 
+  <div class="card">
+    <label for="api-token">Robot control token</label>
+    <input id="api-token" type="password" autocomplete="off" spellcheck="false">
+    <button type="button" onclick="connectApi()">Connect</button>
+    <span id="api-auth-state" role="status">Enter the token configured on the Pi.</span>
+  </div>
+
   <!-- Tab Navigation -->
   <div class="tab-nav">
     <button class="tab-btn" data-tab="about" onclick="switchTab('about')">
@@ -1227,18 +1234,51 @@
   }
 
   // API
+  let apiToken = ''; // Memory only: never put the secret in a URL or browser storage.
+
+  function reportApiError(error) {
+    document.getElementById('api-auth-state').textContent = error.message;
+  }
+
+  async function apiRequest(path, options = {}) {
+    if (!apiToken) throw new Error('Connect with the robot control token first.');
+    const response = await fetch(path, {
+      ...options,
+      headers: { ...options.headers, Authorization: 'Bearer ' + apiToken }
+    });
+    if (response.status === 401) {
+      apiToken = '';
+      throw new Error('Token rejected. Enter the configured robot control token.');
+    }
+    if (!response.ok) throw new Error('Robot request failed: ' + response.status);
+    return response;
+  }
+
+  async function connectApi() {
+    const input = document.getElementById('api-token');
+    apiToken = input.value;
+    input.value = '';
+    try {
+      await apiRequest('/api/status');
+      document.getElementById('api-auth-state').textContent = 'Connected';
+    } catch (error) {
+      apiToken = '';
+      reportApiError(error);
+    }
+  }
+
   function send(cmd) {
-    fetch('/api/control/' + cmd, { method: 'POST' });
+    apiRequest('/api/control/' + cmd, { method: 'POST' }).catch(reportApiError);
   }
 
   function setSens(val) {
     document.getElementById('sens-val').innerText = val + '%';
-    fetch('/api/sens/' + val, { method: 'POST' });
+    apiRequest('/api/sens/' + val, { method: 'POST' }).catch(reportApiError);
   }
 
   function setGain(val) {
     document.getElementById('gain-val').innerText = val + '%';
-    fetch('/api/gain/' + val, { method: 'POST' });
+    apiRequest('/api/gain/' + val, { method: 'POST' }).catch(reportApiError);
   }
 
   function toggleDiag() {
@@ -1673,8 +1713,9 @@
 
   // Fetch data from backend
   async function fetchData() {
+    if (!apiToken) return;
     try {
-      const res = await fetch('/api/status');
+      const res = await apiRequest('/api/status');
       const newData = await res.json();
       
       // Check if this is actually new data using timestamp
@@ -1688,7 +1729,7 @@
         dataFreshness++;
       }
     } catch (e) {
-      console.error('Fetch error:', e);
+      reportApiError(e);
       dataFreshness++;  // Treat errors as stale data
     }
   }

@@ -114,13 +114,16 @@ i2cdetect -y 1
 ### Start the Robot
 ```bash
 cd /path/to/robot-rave
+export ROBOT_API_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 python3 robot_backend.py
 ```
 
 ### Access the Web Interface
 Open a browser and navigate to:
 - From the Pi: `http://localhost:5000`
-- From another device: `http://<pi-ip-address>:5000`
+- Enter the configured `ROBOT_API_TOKEN` in the control panel. All `/api/` routes require `Authorization: Bearer <token>`; the UI keeps it only in memory. Missing or invalid token configuration stops startup before hardware initialization.
+- The server binds only to `127.0.0.1` by default. For another device, prefer SSH forwarding (`ssh -L 5000:127.0.0.1:5000 <pi>`) or an authenticated TLS reverse proxy. Keep the token secret and never put it in a URL.
+- Direct network binding requires an explicit `ROBOT_BIND_HOST` IP address. Plain HTTP on a LAN does not encrypt the token; do not expose this hardware-control service to untrusted networks. Debugger and reloader remain disabled.
 
 ### Controls
 - **START AUTONOMOUS MODE**: Robot listens for music and dances automatically
@@ -145,6 +148,15 @@ robot-rave/
 ```
 
 ## API Endpoints
+
+Authenticate every API request, including status and stop, with the same configured token:
+
+```bash
+curl -H "Authorization: Bearer $ROBOT_API_TOKEN" http://127.0.0.1:5000/api/status
+```
+
+Run offline request/authentication tests with `python3 -m unittest discover -s tests -v` in an environment with Flask and NumPy installed. These tests execute the actual web routes with motor/eye/state mocks; they do not import or initialize hardware, start workers, capture audio, or send network requests. Physical behavior still requires operator validation on a safely restrained robot.
+
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|

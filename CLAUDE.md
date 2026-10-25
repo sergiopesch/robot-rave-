@@ -45,6 +45,14 @@ Web Browser ←→ Flask Server (port 5000)
 - **I2C**: LED matrices at 0x70 (left eye), 0x71 (right eye)
 - **Audio**: 44.1kHz sample rate, 2048 sample chunks
 
+## Web control security
+
+Set a random `ROBOT_API_TOKEN` before starting the backend (for example, generate one with `python3 -c 'import secrets; print(secrets.token_urlsafe(32))'`). Missing/invalid configuration stops before hardware initialization. Enter that token in the frontend; all API routes require its Bearer header. The default bind address is `127.0.0.1`; use SSH forwarding or a TLS proxy for remote access. `ROBOT_BIND_HOST` must be an explicit IP address for deliberate network binding. Plain LAN HTTP does not encrypt the token.
+
+If using sudo, explicitly preserve only `ROBOT_API_TOKEN` and any configured `ROBOT_BIND_HOST` with `sudo --preserve-env=ROBOT_API_TOKEN,ROBOT_BIND_HOST python3 robot_backend.py`. Do not put secrets in command arguments or URLs.
+
+Hardware-free regression checks: `python3 -m unittest discover -s tests -v` (Flask and NumPy required), then `node --test tests/test_frontend.cjs`. These mock motors/eyes and execute only the web section; full Raspberry Pi behavior remains a separate operator check.
+
 ## Common Commands
 
 ```bash
@@ -52,14 +60,14 @@ Web Browser ←→ Flask Server (port 5000)
 python3 robot_backend.py
 
 # Test motor control
-curl -X POST http://localhost:5000/api/control/forward
-curl -X POST http://localhost:5000/api/control/stop
+curl -H "Authorization: Bearer $ROBOT_API_TOKEN" -X POST http://localhost:5000/api/control/forward
+curl -H "Authorization: Bearer $ROBOT_API_TOKEN" -X POST http://localhost:5000/api/control/stop
 
 # Toggle autonomous mode
-curl -X POST http://localhost:5000/api/control/toggle_auto
+curl -H "Authorization: Bearer $ROBOT_API_TOKEN" -X POST http://localhost:5000/api/control/toggle_auto
 
 # Check status
-curl -s http://localhost:5000/api/status | python3 -m json.tool
+curl -H "Authorization: Bearer $ROBOT_API_TOKEN" -s http://localhost:5000/api/status | python3 -m json.tool
 ```
 
 ## API Endpoints
