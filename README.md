@@ -155,7 +155,7 @@ Authenticate every API request, including status and stop, with the same configu
 curl -H "Authorization: Bearer $ROBOT_API_TOKEN" http://127.0.0.1:5000/api/status
 ```
 
-Run offline request/authentication tests with `python3 -m unittest discover -s tests -v` in an environment with Flask installed. These tests execute the actual web routes with motor/eye/state mocks; they do not import or initialize hardware, start workers, capture audio, or send network requests. Physical behavior still requires operator validation on a safely restrained robot.
+Run offline request/authentication tests with `python3 -m unittest discover -s tests -v` in an environment with Flask and NumPy installed. These tests execute the actual web routes with motor/eye/state mocks; they do not import or initialize hardware, start workers, capture audio, or send network requests. Physical behavior still requires operator validation on a safely restrained robot.
 
 
 | Endpoint | Method | Description |

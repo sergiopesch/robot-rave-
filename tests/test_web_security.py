@@ -10,6 +10,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from flask import Flask, jsonify
+import numpy as np
 from robot_web_security import install_api_security, load_web_settings
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,13 +27,13 @@ def web_namespace(source=None):
                if isinstance(node, ast.If) and ast.unparse(node.test) == "__name__ == '__main__'")
     namespace = {"__name__": "robot_web_test", "__file__": str(ROOT / "robot_backend.py"),
                  "Flask": Flask, "jsonify": jsonify, "os": os, "logging": logging,
+                 "np": np,
                  "install_api_security": install_api_security, "API_TOKEN": TOKEN,
                  "state_lock": threading.Lock(), "ui_state": {"sensitivity": 50, "gain": 50},
                  "autonomous_mode": False}
     for name in ["drive", "stop_robot", "clear_motor_queue", "robot_eyes", "dance_engine"]:
         namespace[name] = Mock(name=name)
     exec(compile(ast.Module(body=tree.body[start:end], type_ignores=[]), "robot_backend.py:web-routes", "exec"), namespace)
-    namespace["convert_to_json_serializable"] = lambda value: value
     namespace["app"].config["TESTING"] = True
     return namespace
 
@@ -98,6 +99,16 @@ class WebSecurityTests(unittest.TestCase):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(TOKEN, response.get_data(as_text=True))
+
+    def test_status_converts_numeric_state_without_removed_numpy_aliases(self):
+        self.ns["ui_state"].update({"waveform": np.array([1, 2]), "is_beat": np.bool_(True),
+                                    "energy": np.int64(12), "ratio": np.float64(0.5),
+                                    "status": np.str_("ready")})
+        response = self.client.get("/api/status", headers={"Authorization": "Bearer " + TOKEN})
+        self.assertEqual(response.status_code, 200)
+        for key, value in {"waveform": [1, 2], "is_beat": True, "energy": 12,
+                           "ratio": 0.5, "status": "ready"}.items():
+            self.assertEqual(response.json[key], value)
 
     def test_configuration_fails_closed_and_defaults_to_loopback(self):
         for token in ["", "short", "x" * 257, "x" * 32 + "\n", "é" * 32]:

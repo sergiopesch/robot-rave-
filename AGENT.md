@@ -91,7 +91,7 @@ Set a random `ROBOT_API_TOKEN` before starting the backend (for example, generat
 
 If using sudo, explicitly preserve only `ROBOT_API_TOKEN` and any configured `ROBOT_BIND_HOST` with `sudo --preserve-env=ROBOT_API_TOKEN,ROBOT_BIND_HOST python3 robot_backend.py`. Do not put secrets in command arguments or URLs.
 
-Hardware-free regression checks: `python3 -m unittest discover -s tests -v` (Flask required), then `node --test tests/test_frontend.cjs`. These mock motors/eyes and execute only the web section; full Raspberry Pi behavior remains a separate operator check.
+Hardware-free regression checks: `python3 -m unittest discover -s tests -v` (Flask and NumPy required), then `node --test tests/test_frontend.cjs`. These mock motors/eyes and execute only the web section; full Raspberry Pi behavior remains a separate operator check.
 
 ## Testing
 

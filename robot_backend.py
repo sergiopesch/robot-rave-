@@ -2315,11 +2315,11 @@ def convert_to_json_serializable(obj):
         return [convert_to_json_serializable(item) for item in obj]
     elif isinstance(obj, np.ndarray):
         return obj.tolist()
-    elif isinstance(obj, (np.bool_, np.bool8)):
+    elif isinstance(obj, np.bool_):
         return bool(obj)
-    elif isinstance(obj, (np.integer, np.int_, np.int8, np.int16, np.int32, np.int64)):
+    elif isinstance(obj, np.integer):
         return int(obj)
-    elif isinstance(obj, (np.floating, np.float_, np.float16, np.float32, np.float64)):
+    elif isinstance(obj, np.floating):
         return float(obj)
     elif isinstance(obj, np.str_):
         return str(obj)
