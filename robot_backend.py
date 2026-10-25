@@ -27,7 +27,8 @@ INSTALL:
   sudo apt-get install -y portaudio19-dev i2c-tools
 
 RUN:
-  sudo python3 robot_backend_with_eyes.py
+  Set a random ROBOT_API_TOKEN, then run: python3 robot_backend.py
+  Default web binding: 127.0.0.1; all API routes require its Bearer token.
 """
 
 import os
@@ -41,6 +42,11 @@ import random
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict
 from enum import Enum
+
+from robot_web_security import install_api_security, load_web_settings
+
+# Fail closed before importing or initializing any GPIO, LED or audio hardware.
+WEB_HOST, API_TOKEN = load_web_settings()
 
 import numpy as np
 from scipy import signal
@@ -2295,6 +2301,7 @@ threading.Thread(target=audio_loop, daemon=True).start()
 # 13. WEB SERVER
 # ============================================================
 app = Flask(__name__, static_folder=None)
+install_api_security(app, API_TOKEN)
 log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
 
@@ -2476,7 +2483,7 @@ if __name__ == "__main__":
         print("  POST /api/eyes/special/<type> - Trigger special animation")
         print("=" * 50)
         
-        app.run(host="0.0.0.0", port=5000, debug=False)
+        app.run(host=WEB_HOST, port=5000, debug=False, use_reloader=False)
         
     except KeyboardInterrupt:
         pass

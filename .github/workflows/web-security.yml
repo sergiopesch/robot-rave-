@@ -1,0 +1,26 @@
+name: Hardware-free web security checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Install web-test dependency in an isolated environment
+        run: |
+          python3 -m venv "$RUNNER_TEMP/robot-web-tests"
+          "$RUNNER_TEMP/robot-web-tests/bin/python" -m pip install Flask==3.1.3
+      - name: Check syntax and actual routes with mocked hardware
+        run: |
+          "$RUNNER_TEMP/robot-web-tests/bin/python" -m py_compile robot_backend.py robot_web_security.py tests/test_web_security.py
+          "$RUNNER_TEMP/robot-web-tests/bin/python" -m unittest discover -s tests -v
+          node --test tests/test_frontend.cjs
